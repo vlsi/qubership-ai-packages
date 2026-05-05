@@ -8,3 +8,4 @@ dependencies:
     - Netcracker/qubership-core-lib-go/memlimit/agent-packages/user-guide#feat/agent-packages
     - Netcracker/qubership-core-lib-go/context-propagation/agent-packages/user-guide#feat/agent-packages
     - Netcracker/qubership-core-lib-go-fiber-server-utils/agent-packages/user-guide#feat/agent-packages
+    - Netcracker/qubership-core-base-images/agent-packages/user-guide#feat/agent-packages
