@@ -47,32 +47,60 @@ Rules:
   catalogue is large enough to deserve its own activation). Bundle by
   topic, not by file count — a one-skill package and a five-skill package
   are both fine if each set is internally coherent.
-- Each instructions file pairs with the skill (or skills) it triggers.
-  Keep the names aligned so the relationship is obvious from the tree.
+- Every skill needs a paired instructions file that triggers it.
+  Without the trigger merged into `AGENTS.md` / `CLAUDE.md` the agent
+  has no signal to pull the skill in. Keep names aligned so the link
+  is obvious from the tree. The reverse is **not** required: a small
+  always-true rule may ship as a standalone instruction with no skill
+  behind it (see next section).
 
 The host repo itself is also an APM project: its own AGENTS.md / CLAUDE.md
 must be **rendered by `apm compile`** from a local `.apm/` package plus
 declared dependencies. Do not hand-author AGENTS.md / CLAUDE.md — `apm
 compile` overwrites it.
 
+## Choosing between an instruction and a skill
+
+Everything an APM package ships lands in one of two contexts:
+
+- **Persistent.** Instructions are merged into the agent's root file
+  (`AGENTS.md` / `CLAUDE.md`) by `apm compile` and live in session
+  context on every turn. Cost: tokens × every consumer × every turn.
+- **On-demand.** `SKILL.md` is loaded only after the agent decides
+  the skill is relevant. Cost is paid only when the skill activates.
+
+When you author a new package, decide for each piece of guidance
+which side it belongs on:
+
+- **Persistent (instruction)** — short rules that are always relevant
+  to the file scope, conventions a reviewer would otherwise have to
+  memorize, and the trigger phrase that names a skill. Examples:
+  "use `mvn --batch --quiet` when launching Maven", "log via
+  `logger.InfoC(ctx, …)` in `*.go` handlers", "Dockerfiles use
+  `USER 10001:10001`".
+- **On-demand (`SKILL.md`)** — setup checklists, multi-step how-tos,
+  code templates, failure-mode catalogues, anything that would bloat
+  every consumer's context if always loaded.
+
+Heuristic: "always true and short" is an instruction; "true when X,
+and long" is a skill activated by X. If you find an instructions file
+growing past a paragraph, the overflow probably wants to move into a
+`SKILL.md` and be replaced by a one-line trigger.
+
 ## What an instructions file is for
 
-`apm compile` merges all instructions — local and from dependencies —
-into the agent's root file (`AGENTS.md`, `CLAUDE.md`, …). The body
-therefore lives in the agent's persistent context for the whole session,
-not loaded per-file on demand. That has two consequences:
+Two things only: a narrow `applyTo:` and a short trigger body. Both
+land in the merged `AGENTS.md` / `CLAUDE.md`, so every byte costs
+tokens on every turn for every consumer.
 
-- **Keep it short.** Every instruction file you ship costs tokens for
-  every consumer of the package, on every turn. A short paragraph that
-  names the skill is enough; the long-form belongs in `SKILL.md`.
-- **The trigger phrase is what actually steers the agent.** `applyTo:`
-  is a *placement heuristic* used by `apm compile` to decide which
-  subdirectory's root file an instruction lands in (e.g.
-  `applyTo: "frontend/**/*.tsx"` may end up in `frontend/CLAUDE.md`
-  rather than the repo root). Placement is best-effort and not
-  guaranteed; do not rely on it to gate behaviour. State the file scope
-  in the trigger sentence as well — "When editing `*.go` …" — so the
-  agent picks up the rule wherever the merged file ended up.
+`applyTo:` is a *placement heuristic*, not a runtime gate. `apm
+compile` uses it to decide which subdirectory's root file the
+instruction lands in (e.g. `applyTo: "frontend/**/*.tsx"` may land
+in `frontend/CLAUDE.md` instead of the repo root). Placement is
+best-effort; behaviour is steered by the trigger phrase, not by
+`applyTo`. So state the file scope in the trigger sentence as well —
+"When editing `*.go` …" — so the agent picks up the rule wherever
+the merged file ended up.
 
 Rules for the file:
 
