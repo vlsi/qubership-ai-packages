@@ -1,0 +1,246 @@
+---
+name: apm-authoring
+description: How to author APM packages — skills, instructions and prompts — for the Qubership platform. Use when creating a new agent-package, editing an existing `SKILL.md` or `*.instructions.md`, or reviewing changes under `agent-packages/` or `.apm/`.
+---
+
+# Authoring APM packages for Qubership
+
+APM (https://github.com/microsoft/apm) is a package manager for AI-agent
+primitives: **instructions** (auto-applied rules), **skills** (how-to guides
+the agent invokes on demand), and **prompts** (slash-commands). The Qubership
+platform ships its conventions as APM packages so service developers receive
+them as `apm dependencies` and agents like Claude Code, Copilot and Cursor
+pick them up natively.
+
+This skill is the contract between platform-library authors and the agents
+that read their packages. Apply it whenever you touch `apm.yml`, a
+`SKILL.md`, an `*.instructions.md`, or set up a new `agent-packages/<name>/`.
+
+## Package layout
+
+A library repo can host one or more APM packages. Each one lives under
+`agent-packages/<package-name>/` so the path itself is the disambiguator:
+
+```
+agent-packages/
+└── <package-name>/                  # = `name:` in apm.yml; matches the skill
+    ├── apm.yml
+    └── .apm/
+        ├── instructions/
+        │   └── <package-name>.instructions.md
+        ├── skills/
+        │   └── <package-name>/
+        │       └── SKILL.md
+        └── prompts/                 # optional
+            └── <name>.prompt.md
+```
+
+Rules:
+
+- `<package-name>` is descriptive and unique (`context-propagation-go-usage`,
+  `qubership-dockerfile-usage`), **not** a generic placeholder like
+  `user-guide`. Multiple packages can sit side-by-side in one repo, so the
+  directory name has to identify the package on its own.
+- One skill per package. Split into separate packages if a single library
+  exposes truly independent concerns; do not bundle unrelated skills.
+- Instructions and skill share the package name. The instructions file is
+  the trigger; the skill file is the body. Keep them paired.
+
+The host repo itself is also an APM project: its own AGENTS.md / CLAUDE.md
+must be **rendered by `apm compile`** from a local `.apm/` package plus
+declared dependencies. Do not hand-author AGENTS.md / CLAUDE.md — `apm
+compile` overwrites it.
+
+## What an instructions file is for
+
+The instructions file is auto-loaded on every matching file. It is the
+entire context the agent has when deciding whether to pull the skill in.
+Therefore:
+
+- Keep it **one short paragraph**. It is not a tutorial.
+- Set `applyTo:` narrowly so the trigger only fires when relevant
+  (`**/*.go`, `**/{Dockerfile,Dockerfile.*,*.Dockerfile}`, `**/pom.xml`).
+  Avoid `applyTo: "**/*"` unless the rule really is universal — umbrella
+  packages are the only legitimate case.
+- The body says **what the user is doing** when the skill should activate
+  — a verb phrase — not "when the user works with library X". The library
+  name is bookkeeping, the verb is the trigger.
+
+```markdown
+---
+description: Go coding standards for Qubership context propagation.
+applyTo: "**/*.go"
+---
+
+## Skill trigger: `context-propagation-go-usage`
+
+When propagating request context (X-Request-Id, X-Version, headers, etc.)
+between Go microservices — or reviewing code that does — apply the
+`context-propagation-go-usage` skill.
+```
+
+Avoid in the trigger:
+
+- `When the user works with github.com/.../<long-import-path> library — registering providers, initializing context, propagating headers, writing custom providers, working with snapshots …`
+  This is the skill body, not a trigger. Pick the user-facing verb.
+- Negative scope (`Do NOT use for the X operator`). If a different repo
+  must not pick up your skill, that repo's own scope handles it. Don't
+  fight other packages from yours.
+- Repeating `applyTo` in prose ("when editing a Go file…") — `applyTo`
+  already enforces it.
+
+## What a SKILL.md is for
+
+The skill is what the agent reads **after** it decides to engage. Its job
+is to teach the agent things it cannot infer from imports, types, or
+generic documentation. Three rules:
+
+### 1. Encode platform-specific knowledge, nothing else
+
+Include only what the agent cannot reasonably know:
+
+- **Required ordering** of init steps (`configloader.Init` before
+  `logging.GetLogger`; `serviceloader.Register` before
+  `fiberserver.Process`).
+- **Side-channel contracts** (env vars, `application.yaml` files that
+  must exist, k8s projected volumes that must be mounted).
+- **Failure modes that look fine in code** (`Process()` panics if the
+  security middleware was not registered; `AllowedHeader` silently
+  no-ops without `HEADERS_ALLOWED`).
+- **Helpers that replace ad-hoc work** (`ctxhelper.AddSerializableContextData`
+  instead of manual header copying).
+- **Conventions a reviewer would otherwise have to memorize**
+  (`USER 10001:10001`, `--chown=10001:0`, `appuser`).
+
+Leave out everything else. In particular, don't include:
+
+- Generic ecosystem knowledge — `go get`, adding to `pom.xml`, Dockerfile
+  multi-stage basics, how `CGO_ENABLED=0` produces a static binary. The
+  agent already knows. Stating it dilutes the signal of what is
+  Qubership-specific.
+- Material that belongs in the library's own API docs. Languages publish
+  generated docs (godoc → pkg.go.dev, javadoc, rustdoc, pydoc) and the
+  agent can fetch them when needed. Repeating method signatures and
+  parameter prose in the skill creates a second source of truth that
+  drifts.
+- Implementation-detail asides ("returns an interface with level-based
+  methods", "does not override GOMEMLIMIT if already set"). If the
+  developer doesn't act on it, the skill doesn't need it.
+
+### 2. One canonical example per concern
+
+State the rule, then show one concrete example. Do not show two examples
+that vary in trivial ways — a reviewer rightly asks "is this any
+different from the previous example?". If a real variant exists (Quarkus
+fast-jar vs Spring Boot uber-jar; net/http vs Fiber middleware), show it
+once and label what makes it different.
+
+When listing pitfalls, prefer **rule + brief reason** over a wall of
+`// WRONG: …` snippets. Negative examples without the matching positive
+flow leave the reader guessing what was supposed to happen. A
+"Common pitfalls" section is fine — keep each entry to a one-line cause
+and one-line fix.
+
+### 3. Don't separate "create" and "review"
+
+The skill should make the same recommendation whether the agent is
+writing new code or reviewing existing code. Avoid a dedicated
+"Reviewing an existing X" section that restates the same rules in
+checklist form — that's two sources to keep in sync. Express the rules
+once, in active voice, and let them apply to both directions.
+
+## Frontmatter and formatting
+
+- YAML frontmatter starts at column 0. Do not indent its keys or content
+  body. (Indented frontmatter renders as a blockquote inside `<pre>` and
+  may not be parsed as frontmatter at all.)
+- Use plain Markdown source for tables, lists and code fences. Do not
+  paste rendered ASCII boxes (`┌──┬──┐`) — they are unreadable in the
+  source view, agents process them poorly, and they don't survive edits.
+- Code blocks specify the language (` ```go `, ` ```dockerfile `,
+  ` ```yaml `).
+- Skill `description:` is the field the agent uses to decide whether
+  the skill is relevant. Make it a verb-led sentence describing the
+  user task, not a feature list of the library.
+
+## Versions
+
+Do not hard-code library or image versions in skills.
+
+- The repository's own `go.mod`, `pom.xml`, existing Dockerfile, etc. is
+  the source of truth for the version a service uses. The skill should
+  point the agent at that, not at a number that will be stale next
+  quarter.
+- Where the skill must mention a version (e.g., a base-image migration
+  story), make it clear that the value is illustrative and direct the
+  agent to the upstream release page.
+- Distribution names should be precise or omitted. Don't write
+  "OpenJDK" when you mean "Eclipse Temurin" or just "Java 21" — be
+  specific or generic, never sloppy.
+
+The skill itself is versioned in `apm.yml`. Bump that when the contract
+changes (new required step, breaking rename), not on every prose edit.
+
+## apm.yml
+
+Minimal valid manifest for a leaf package:
+
+```yaml
+name: <package-name>           # matches agent-packages/<package-name>/
+version: 1.0.0
+description: One-sentence purpose.
+author: Qubership
+```
+
+Umbrella / aggregator packages declare dependencies and nothing else
+substantive — the umbrella's instructions file should be a one-line
+"all platform rules apply" pointer, like
+[go-microservice-dev-kit.instructions.md](agent-packages/go-microservice-dev-kit/.apm/instructions/go-microservice-dev-kit.instructions.md).
+
+```yaml
+name: go-microservice-dev-kit
+version: 1.0.0
+description: Umbrella package for Qubership Go microservices.
+author: Qubership
+dependencies:
+  apm:
+    - Netcracker/<repo>/<path>/agent-packages/<package>#<ref>
+```
+
+Conventions for the dependency list:
+
+- Pin to a tag (`@v1.2.0`) for stable consumers; pin to a branch
+  (`#feat/agent-packages`) only while a feature is still in review.
+- Each dependency line resolves to one `agent-packages/<name>/` folder,
+  so the suffix in the URL must end in the package directory — never
+  the repo root.
+
+## Reference: the umbrella pattern
+
+A platform with several libraries should expose **one umbrella** package
+for service developers to depend on, plus one leaf package per library
+hosted alongside that library's source. The umbrella's only job is the
+dependency list and a near-empty instructions file. Don't duplicate
+library content in the umbrella; transitive resolution is what makes the
+model work.
+
+## Common authoring pitfalls
+
+- **Trigger sentence is a feature list.** Replace with a one-verb
+  description of the user task.
+- **Skill restates language docs.** Drop the prose that simply mirrors
+  godoc; link or trust the agent to fetch.
+- **Multiple near-identical examples.** Collapse to one and explain the
+  axis of variation if a second is genuinely different.
+- **Tables drawn with box-drawing characters.** Convert to Markdown
+  table syntax or to a bullet list.
+- **Hard-coded versions in the skill body.** Defer to the consumer's
+  manifest or to the upstream release page.
+- **Generic wisdom mixed with platform rules.** If a paragraph could
+  appear unchanged in any tutorial on the topic, it doesn't belong here.
+- **Negative-only checklists.** Pair each `WRONG` with the positive
+  flow, or replace with a one-line rule plus reason.
+- **`agent-packages/user-guide/` as a directory name.** Use the
+  package's actual name; multiple packages collide otherwise.
+- **Hand-edited AGENTS.md / CLAUDE.md in a repo that already uses
+  APM.** Edit the local `.apm/` package and re-run `apm compile`.
