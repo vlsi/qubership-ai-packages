@@ -41,10 +41,14 @@ Rules:
   `qubership-dockerfile-usage`), **not** a generic placeholder like
   `user-guide`. Multiple packages can sit side-by-side in one repo, so the
   directory name has to identify the package on its own.
-- One skill per package. Split into separate packages if a single library
-  exposes truly independent concerns; do not bundle unrelated skills.
-- Instructions and skill share the package name. The instructions file is
-  the trigger; the skill file is the body. Keep them paired.
+- A package holds a **coherent set** of skills, instructions and prompts
+  that share an audience and a trigger surface (e.g. `<lib>-usage` for
+  day-to-day code; a separate `<lib>-troubleshooting` if the failure-mode
+  catalogue is large enough to deserve its own activation). Bundle by
+  topic, not by file count — a one-skill package and a five-skill package
+  are both fine if each set is internally coherent.
+- Each instructions file pairs with the skill (or skills) it triggers.
+  Keep the names aligned so the relationship is obvious from the tree.
 
 The host repo itself is also an APM project: its own AGENTS.md / CLAUDE.md
 must be **rendered by `apm compile`** from a local `.apm/` package plus
@@ -53,18 +57,33 @@ compile` overwrites it.
 
 ## What an instructions file is for
 
-The instructions file is auto-loaded on every matching file. It is the
-entire context the agent has when deciding whether to pull the skill in.
-Therefore:
+`apm compile` merges all instructions — local and from dependencies —
+into the agent's root file (`AGENTS.md`, `CLAUDE.md`, …). The body
+therefore lives in the agent's persistent context for the whole session,
+not loaded per-file on demand. That has two consequences:
 
-- Keep it **one short paragraph**. It is not a tutorial.
-- Set `applyTo:` narrowly so the trigger only fires when relevant
-  (`**/*.go`, `**/{Dockerfile,Dockerfile.*,*.Dockerfile}`, `**/pom.xml`).
-  Avoid `applyTo: "**/*"` unless the rule really is universal — umbrella
-  packages are the only legitimate case.
-- The body says **what the user is doing** when the skill should activate
-  — a verb phrase — not "when the user works with library X". The library
-  name is bookkeeping, the verb is the trigger.
+- **Keep it short.** Every instruction file you ship costs tokens for
+  every consumer of the package, on every turn. A short paragraph that
+  names the skill is enough; the long-form belongs in `SKILL.md`.
+- **The trigger phrase is what actually steers the agent.** `applyTo:`
+  is a *placement heuristic* used by `apm compile` to decide which
+  subdirectory's root file an instruction lands in (e.g.
+  `applyTo: "frontend/**/*.tsx"` may end up in `frontend/CLAUDE.md`
+  rather than the repo root). Placement is best-effort and not
+  guaranteed; do not rely on it to gate behaviour. State the file scope
+  in the trigger sentence as well — "When editing `*.go` …" — so the
+  agent picks up the rule wherever the merged file ended up.
+
+Rules for the file:
+
+- Use a narrow `applyTo:` mask (`**/*.go`,
+  `**/{Dockerfile,Dockerfile.*,*.Dockerfile}`, `**/pom.xml`) so APM can
+  place the instruction near the code it governs. `**/*` is fine only
+  for umbrella packages where the rule really is universal.
+- The body says **what the user is doing** when the skill should
+  activate — a verb phrase, ideally with the file mask — not "when the
+  user works with library X". The library name is bookkeeping; the
+  verb is the trigger.
 
 ```markdown
 ---
@@ -74,8 +93,8 @@ applyTo: "**/*.go"
 
 ## Skill trigger: `context-propagation-go-usage`
 
-When propagating request context (X-Request-Id, X-Version, headers, etc.)
-between Go microservices — or reviewing code that does — apply the
+When editing `*.go` and propagating request context (X-Request-Id,
+X-Version, headers, etc.) between Qubership microservices, apply the
 `context-propagation-go-usage` skill.
 ```
 
@@ -86,8 +105,9 @@ Avoid in the trigger:
 - Negative scope (`Do NOT use for the X operator`). If a different repo
   must not pick up your skill, that repo's own scope handles it. Don't
   fight other packages from yours.
-- Repeating `applyTo` in prose ("when editing a Go file…") — `applyTo`
-  already enforces it.
+- Padding the trigger with "or reviewing code that does …". The verb
+  phrase already covers both creation and review; adding the second
+  half just inflates the persistent-context cost.
 
 ## What a SKILL.md is for
 
