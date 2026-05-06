@@ -1,20 +1,22 @@
 ---
 name: apm-authoring
-description: How to author APM packages — skills, instructions and prompts — for the Qubership platform. Use when creating a new agent-package, editing an existing `SKILL.md` or `*.instructions.md`, or reviewing changes under `agent-packages/` or `.apm/`.
+description: How to author APM packages — instructions, skills, prompts, agents, hooks — for the Qubership platform. Use when creating a new agent-package, editing an existing primitive under `.apm/`, or reviewing changes under `agent-packages/`.
 ---
 
 # Authoring APM packages for Qubership
 
 APM (https://github.com/microsoft/apm) is a package manager for AI-agent
-primitives: **instructions** (auto-applied rules), **skills** (how-to guides
-the agent invokes on demand), and **prompts** (slash-commands). The Qubership
-platform ships its conventions as APM packages so service developers receive
-them as `apm dependencies` and agents like Claude Code, Copilot and Cursor
-pick them up natively.
+primitives: **instructions** (always-on rules), **skills** (on-demand
+how-to guides), **prompts** (user-invoked slash-commands), **agents**
+(sub-agent personas with tool boundaries) and **hooks** (lifecycle
+scripts). The Qubership platform ships its conventions as APM packages
+so service developers receive them as `apm dependencies` and agents
+like Claude Code, Copilot and Cursor pick them up natively.
 
-This skill is the contract between platform-library authors and the agents
-that read their packages. Apply it whenever you touch `apm.yml`, a
-`SKILL.md`, an `*.instructions.md`, or set up a new `agent-packages/<name>/`.
+This skill is the contract between platform-library authors and the
+agents that read their packages. Apply it whenever you touch
+`apm.yml`, anything under a `.apm/` tree, or set up a new
+`agent-packages/<name>/`.
 
 ## Package layout
 
@@ -23,16 +25,19 @@ A library repo can host one or more APM packages. Each one lives under
 
 ```
 agent-packages/
-└── <package-name>/                  # = `name:` in apm.yml; matches the skill
+└── <package-name>/                  # = `name:` in apm.yml
     ├── apm.yml
     └── .apm/
-        ├── instructions/
+        ├── instructions/            # *.instructions.md — always-on rules
         │   └── <package-name>.instructions.md
-        ├── skills/
+        ├── skills/                  # SKILL.md — on-demand how-tos
         │   └── <package-name>/
         │       └── SKILL.md
-        └── prompts/                 # optional
-            └── <name>.prompt.md
+        ├── prompts/                 # optional — *.prompt.md, user-invoked
+        │   └── <name>.prompt.md
+        ├── agents/                  # optional — *.agent.md, sub-agent personas
+        │   └── <name>.agent.md
+        └── hooks/                   # optional — lifecycle scripts
 ```
 
 Rules:
@@ -41,8 +46,9 @@ Rules:
   `qubership-dockerfile-usage`), **not** a generic placeholder like
   `user-guide`. Multiple packages can sit side-by-side in one repo, so the
   directory name has to identify the package on its own.
-- A package holds a **coherent set** of skills, instructions and prompts
-  that share an audience and a trigger surface (e.g. `<lib>-usage` for
+- A package holds a **coherent set** of primitives (instructions,
+  skills, prompts, agents, hooks) that share an audience and a
+  trigger surface (e.g. `<lib>-usage` for
   day-to-day code; a separate `<lib>-troubleshooting` if the failure-mode
   catalogue is large enough to deserve its own activation). Bundle by
   topic, not by file count — a one-skill package and a five-skill package
@@ -59,18 +65,43 @@ must be **rendered by `apm compile`** from a local `.apm/` package plus
 declared dependencies. Do not hand-author AGENTS.md / CLAUDE.md — `apm
 compile` overwrites it.
 
-## Choosing between an instruction and a skill
+## Choosing the right primitive
 
-Everything an APM package ships lands in one of two contexts:
+APM ships five kinds of primitives. Pick the one that matches *when*
+the rule needs to fire and *who* invokes it:
 
-- **Persistent.** Instructions are merged into the agent's root file
-  (`AGENTS.md` / `CLAUDE.md`) by `apm compile` and live in session
-  context on every turn. Cost: tokens × every consumer × every turn.
-- **On-demand.** `SKILL.md` is loaded only after the agent decides
-  the skill is relevant. Cost is paid only when the skill activates.
+- **Instructions** (`*.instructions.md`) — rules merged into the
+  agent's root file (`AGENTS.md` / `CLAUDE.md`) by `apm compile` and
+  living in session context on every turn. Cost: tokens × every
+  consumer × every turn.
+- **Skills** (`SKILL.md`) — on-demand how-to guides loaded only after
+  the agent decides a skill is relevant (steered by the trigger
+  phrase in a paired instruction). Cost paid only when activated.
+- **Prompts** (`*.prompt.md`) — slash-commands the **user** invokes
+  explicitly (`/review-pr`). Not loaded into context until called.
+  Use them for repeatable workflows the agent should not auto-trigger.
+- **Agents** (`*.agent.md` under `agents/`) — sub-agent personalities
+  with their own context window and tool-permission boundaries.
+  Spawned via `Agent` / `Task`-style tools. Use when a task deserves
+  its own scratch context, or the parent should not have a particular
+  tool, or the work is parallelizable.
+- **Hooks** (`hooks/`) — lifecycle scripts that run at specific
+  points in the agent loop (pre/post tool call, on-stop, etc.). They
+  do not enter the model's context at all — they execute in the
+  harness. Use them for deterministic enforcement (linters, secret
+  scanners, log filters) where prose advice is unreliable.
 
-When you author a new package, decide for each piece of guidance
-which side it belongs on:
+For most library-usage packages the bulk of the work is **one
+instruction** (the trigger) plus **one skill** (the how-to). Prompts,
+agents, and hooks are reserved for the cases the instruction-skill
+pair cannot cover: user-driven workflows, isolated sub-tasks, and
+hard enforcement, respectively.
+
+### Instruction vs skill: the common case
+
+The decision that comes up on almost every package is whether a given
+rule should ship as a persistent instruction or as a skill. Decide
+for each piece of guidance:
 
 - **Persistent (instruction)** — rules the agent should follow on
   **every turn regardless of which files are open**, plus the
