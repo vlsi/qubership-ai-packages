@@ -336,14 +336,20 @@ against the lockfile.
 If the user asks to fix or extend a skill that came from a
 dependency:
 
-1. Identify the upstream package from `apm.yml` `dependencies.apm`
-   (or from the resolved source URL in `apm.lock`).
-2. File a PR against that repo's `.apm/skills/<name>/SKILL.md`.
+1. Locate the upstream package via `apm_modules/`:
+   - **Skills, agents, prompts** — search for the folder/file by
+     its name under `apm_modules/`.
+   - **Instructions** — grep `apm_modules/` for the rule's text
+     (instructions get merged on compile, so name-matching does not
+     help).
+
+   The matching `apm_modules/<owner>/<repo>/.../` path tells you
+   the source repo; cross-check with `apm.yml` / `apm.lock` for the
+   pinned version.
+2. File a PR against that repo's `.apm/<primitive-folder>/<name>/`
+   (e.g. `.apm/skills/<name>/SKILL.md`).
 3. Once the upstream change is released, bump the version in this
    repo's `apm.yml` and run `apm install` followed by `apm compile`.
-
-This is the rare case — most authoring work touches primitives in
-the current repo's `.apm/` and stays local.
 
 ## Common authoring pitfalls
 
