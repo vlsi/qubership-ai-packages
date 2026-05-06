@@ -249,6 +249,32 @@ writing new code or reviewing existing code. Avoid a dedicated
 checklist form — that's two sources to keep in sync. Express the rules
 once, in active voice, and let them apply to both directions.
 
+## Agents, hooks, and prompts
+
+`apm` supports these three primitives in addition to instructions
+and skills, but day-to-day authoring on a Qubership platform package
+rarely needs them. This skill does not restate their file formats —
+fetch the upstream `apm` documentation
+(https://github.com/microsoft/apm) when you reach for one.
+
+The rule that does belong here is about *when* to reach for them:
+**the user decides whether to introduce an agent, a hook, or a
+prompt — do not pick them unilaterally over a skill or instruction.**
+
+- **Agents** (`*.agent.md`) change the runtime shape — separate
+  context budget, restricted tool set, parallelisable. Worth it
+  when a sub-task is heavy enough to deserve its own scratch
+  context, but not as a default. If the user has not asked for an
+  agent, propose a skill first.
+- **Hooks** run scripts at lifecycle events and do not enter the
+  model's context. Use them for deterministic enforcement (linters,
+  secret scanners, log filters) when prose advice has demonstrably
+  failed. Don't pre-emptively wire a hook for "good hygiene".
+- **Prompts** (`*.prompt.md`) run only when the user types the
+  slash-command, so they are the safest of the three to suggest.
+  Even so, prefer a skill the agent activates from a trigger over a
+  slash-command the user has to remember to invoke.
+
 ## Frontmatter and formatting
 
 - YAML frontmatter starts at column 0. Do not indent its keys or content
