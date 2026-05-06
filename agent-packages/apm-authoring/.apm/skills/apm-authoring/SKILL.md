@@ -145,14 +145,29 @@ Two things only: a narrow `applyTo:` and a short trigger body. Both
 land in the merged `AGENTS.md` / `CLAUDE.md`, so every byte costs
 tokens on every turn for every consumer.
 
-`applyTo:` is a *placement heuristic*, not a runtime gate. `apm
-compile` uses it to decide which subdirectory's root file the
-instruction lands in (e.g. `applyTo: "frontend/**/*.tsx"` may land
-in `frontend/CLAUDE.md` instead of the repo root). Placement is
-best-effort; behaviour is steered by the trigger phrase, not by
-`applyTo`. So state the file scope in the trigger sentence as well —
-"When editing `*.go` …" — so the agent picks up the rule wherever
-the merged file ended up.
+`applyTo:` is **not a reliable runtime gate**, because what it does
+depends on the compile target:
+
+- **`apm compile` to `AGENTS.md` / `CLAUDE.md`** (the dominant
+  target for Claude Code, Codex, etc.) — the target format has no
+  concept of per-file scoping, so once an instruction lands in the
+  merged file it loads on every turn regardless of the path the
+  agent is touching. APM uses `applyTo:` here only as a *placement
+  heuristic*: it picks which subdirectory's root file an
+  instruction goes into (e.g. `applyTo: "frontend/**/*.tsx"` may
+  land in `frontend/CLAUDE.md` instead of the repo root). Best
+  effort, no guarantee.
+- **Native deployment to agents that read primitives directly**
+  (Cursor `.cursor/rules/*.mdc`, Copilot custom-instructions) —
+  `applyTo:` (or its target-native equivalent) survives into the
+  deployed file and the agent runtime treats it as a real scope
+  filter.
+
+Because at least one major target cannot honour `applyTo:` as a
+runtime gate, **state the file scope in the trigger sentence
+itself** — "When editing `*.go` …" — so the rule fires correctly
+whatever target `apm compile` produces. Don't rely on `applyTo:`
+alone to gate behaviour.
 
 Rules for the file:
 
