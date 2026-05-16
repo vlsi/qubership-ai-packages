@@ -1,13 +1,12 @@
 # apm-authoring
 
 Authoring conventions for APM packages — instructions, skills, prompts,
-agents, hooks, `apm.yml` — distilled from the first wave of Qubership
-agent-package reviews. Apply them when you create or edit a `.apm/`
-tree.
+agents, hooks, `apm.yml` — distilled from real agent-package reviews.
+Apply them when you create or edit a `.apm/` tree.
 
 This package is **for authors and maintainers** of APM packages. End
-consumers of a Qubership library do not need it: the rules concern how
-you *write* a skill, not how you *use* one. Install it as a
+consumers of a library do not need it: the rules concern how you
+*write* a skill, not how you *use* one. Install it as a
 **devDependency** so it never ships in `apm pack` output and never
 reaches downstream services.
 

@@ -1,22 +1,21 @@
 ---
 name: apm-authoring
-description: How to author APM packages — instructions, skills, prompts, agents, hooks — for the Qubership platform. Use when editing APM primitives (`apm.yml`, `*.instructions.md`, `SKILL.md`, `*.prompt.md`, `*.agent.md`, hooks) or laying out a new `agent-packages/<name>/`.
+description: How to author APM packages — instructions, skills, prompts, agents, hooks. Use when editing APM primitives (`apm.yml`, `*.instructions.md`, `SKILL.md`, `*.prompt.md`, `*.agent.md`, hooks) or laying out a new `agent-packages/<name>/`.
 ---
 
-# Authoring APM packages for Qubership
+# Authoring APM packages
 
 APM (https://github.com/microsoft/apm) is a package manager for AI-agent
 primitives: **instructions** (always-on rules), **skills** (on-demand
 how-to guides), **prompts** (user-invoked slash-commands), **agents**
 (sub-agent personas with tool boundaries) and **hooks** (lifecycle
-scripts). The Qubership platform ships its conventions as APM packages
-so service developers receive them as `apm dependencies` and agents
-like Claude Code, Copilot and Cursor pick them up natively.
+scripts). A platform can ship its conventions as APM packages so service
+developers receive them as `apm dependencies` and agents like Claude
+Code, Copilot and Cursor pick them up natively.
 
-This skill is the contract between platform-library authors and the
-agents that read their packages. Apply it whenever you touch
-`apm.yml`, anything under a `.apm/` tree, or set up a new
-`agent-packages/<name>/`.
+This skill is the contract between library authors and the agents that
+read their packages. Apply it whenever you touch `apm.yml`, anything
+under a `.apm/` tree, or set up a new `agent-packages/<name>/`.
 
 ## Package layout
 
@@ -43,7 +42,7 @@ agent-packages/
 Rules:
 
 - `<package-name>` is descriptive and unique (`context-propagation-go-usage`,
-  `qubership-dockerfile-usage`), **not** a generic placeholder like
+  `hardened-dockerfile-usage`), **not** a generic placeholder like
   `user-guide`. Multiple packages can sit side-by-side in one repo, so the
   directory name has to identify the package on its own.
 - A package holds a **coherent set** of primitives (instructions,
@@ -128,7 +127,7 @@ for each piece of guidance:
       `**/*.go`. Loading it on every turn would pay tokens for it
       while reading SQL, editing YAML, or reviewing CI logs.
     - "Dockerfiles use `USER 10001:10001` and `--chown=10001:0`"
-      → ships in `qubership-dockerfile-usage`, triggered on
+      → ships in a `hardened-dockerfile-usage` skill, triggered on
       `**/{Dockerfile,Dockerfile.*,*.Dockerfile}`.
 
 Heuristic: an instruction earns its place only if the agent
@@ -182,14 +181,14 @@ Rules for the file:
 
 ```markdown
 ---
-description: Go coding standards for Qubership context propagation.
+description: Go coding standards for cross-service context propagation.
 applyTo: "**/*.go"
 ---
 
 ## Skill trigger: `context-propagation-go-usage`
 
 When editing `*.go` and propagating request context (X-Request-Id,
-X-Version, headers, etc.) between Qubership microservices, apply the
+X-Version, headers, etc.) between microservices, apply the
 `context-propagation-go-usage` skill.
 ```
 
@@ -232,7 +231,7 @@ Leave out everything else. In particular, don't include:
 - Generic ecosystem knowledge — `go get`, adding to `pom.xml`, Dockerfile
   multi-stage basics, how `CGO_ENABLED=0` produces a static binary. The
   agent already knows. Stating it dilutes the signal of what is
-  Qubership-specific.
+  platform-specific.
 - Material that belongs in the library's own API docs. Languages publish
   generated docs (godoc → pkg.go.dev, javadoc, rustdoc, pydoc) and the
   agent can fetch them when needed. Repeating method signatures and
@@ -267,7 +266,7 @@ once, in active voice, and let them apply to both directions.
 ## Agents, hooks, and prompts
 
 `apm` supports these three primitives in addition to instructions
-and skills, but day-to-day authoring on a Qubership platform package
+and skills, but day-to-day authoring on a library-usage package
 rarely needs them. This skill does not restate their file formats —
 fetch the upstream `apm` documentation
 (https://github.com/microsoft/apm) when you reach for one.
@@ -330,7 +329,7 @@ Minimal valid manifest for a leaf package:
 name: <package-name>           # matches agent-packages/<package-name>/
 version: 1.0.0
 description: One-sentence purpose.
-author: Qubership
+author: <your-org>
 ```
 
 Umbrella / aggregator packages declare dependencies and nothing else
@@ -341,11 +340,11 @@ substantive — the umbrella's instructions file should be a one-line
 ```yaml
 name: go-microservice-dev-kit
 version: 1.0.0
-description: Umbrella package for Qubership Go microservices.
-author: Qubership
+description: Umbrella package for the Go microservice dev kit.
+author: <your-org>
 dependencies:
   apm:
-    - Netcracker/<repo>/<path>/agent-packages/<package>#<ref>
+    - <owner>/<repo>/<path>/agent-packages/<package>#<ref>
 ```
 
 Conventions for the dependency list:
