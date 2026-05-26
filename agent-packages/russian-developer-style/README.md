@@ -1,5 +1,7 @@
 # russian-developer-style
 
+> Русская версия: [README.ru.md](README.ru.md).
+
 Style guidance for Russian-language developer-facing text: README and
 Markdown docs, code comments, docstrings (Javadoc, KDoc), commit messages,
 PR descriptions, changelogs, UI strings, error and log messages, and
