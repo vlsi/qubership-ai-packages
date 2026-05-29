@@ -6,12 +6,18 @@ on:
       - apm.yml
       - .claude-plugin/marketplace.json
       - agent-packages/**
+      - docs/**
+      - scripts/**
+      - .github/workflows/marketplace.yml
   push:
     branches: [main]
     paths:
       - apm.yml
       - .claude-plugin/marketplace.json
       - agent-packages/**
+      - docs/**
+      - scripts/**
+      - .github/workflows/marketplace.yml
 
 jobs:
   validate:
@@ -26,3 +32,21 @@ jobs:
       # --dry-run is required: without it, pack rewrites the file first and the drift check always passes.
       - name: Check versions aligned and index in sync
         run: uvx --python 3.12 --from apm-cli==0.16.0 apm pack --check-versions --check-clean --dry-run
+
+  verify-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          enable-cache: true
+      # Extract the "verify" group from the consumer guide with doccmd and run those
+      # commands against this revision, in a scratch directory so the checkout stays clean.
+      - name: Run consumer guide commands against this revision
+        working-directory: ${{ runner.temp }}
+        env:
+          DOC_REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          DOC_REF: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          mkdir -p .claude  # a harness marker so `apm install` has a deploy target
+          uvx --python 3.12 doccmd --language=bash --group-marker=verify --command="$GITHUB_WORKSPACE/scripts/verify-doc-block.sh" "$GITHUB_WORKSPACE/docs/consuming-packages.md"

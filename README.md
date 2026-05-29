@@ -2,8 +2,8 @@
 
 This repository is an APM marketplace of Qubership agent packages. Two guides cover the workflow:
 
-- [Publisher guide](docs/for-publisher.md) — add a package and release a new version.
-- [Consumer guide](docs/for-consumer.md) — register the marketplace, then install, update, and remove packages.
+- [Publishing packages](docs/publishing-packages.md) — add a package and release a new version.
+- [Consuming packages](docs/consuming-packages.md) — register the marketplace, then install, update, and remove packages.
 
 Quick start for consumers:
 

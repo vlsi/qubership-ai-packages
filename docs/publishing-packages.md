@@ -1,4 +1,4 @@
-# Publisher guide
+# Publishing packages
 
 This repository is an APM marketplace. Each package lives under `agent-packages/<name>/`; the index is the `marketplace:` block in the root `apm.yml`, compiled to `.claude-plugin/marketplace.json` by `apm pack`. Both files are committed. Releases are git tags (`vX.Y.Z`) that consumers pin.
 
@@ -64,7 +64,7 @@ This repository is an APM marketplace. Each package lives under `agent-packages/
 
 4. After merge, cut a new repository tag (`v<X.Y.Z>`).
 
-Consumers move forward by re-registering at the new tag; see [the consumer guide](./for-consumer.md).
+Consumers move forward by re-registering at the new tag; see [the consumer guide](./consuming-packages.md).
 
 ## Validate before you open a pull request
 
