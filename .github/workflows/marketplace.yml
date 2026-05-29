@@ -17,13 +17,12 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
-          python-version: "3.12"
-      - run: pip install "apm-cli>=0.16"
+          enable-cache: true
       # --check-versions: every package declares a version consistent with the strategy.
       # --check-clean: the committed marketplace.json matches what apm.yml would produce.
       # --dry-run is required: without it, pack rewrites the file first and the drift check always passes.
       - name: Check versions aligned and index in sync
-        run: apm pack --check-versions --check-clean --dry-run
+        run: uvx --python 3.12 --from apm-cli==0.16.0 apm pack --check-versions --check-clean --dry-run
