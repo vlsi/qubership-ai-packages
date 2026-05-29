@@ -69,10 +69,12 @@ Consumers move forward by re-registering at the new tag; see [the consumer guide
 ## Validate before you open a pull request
 
 ```bash
-apm pack --check-clean   # fails if the committed marketplace.json is stale
+apm pack --check-versions --check-clean --dry-run
 ```
 
-Run `apm pack --check-clean` in CI to keep `marketplace.json` in sync with `apm.yml`. `apm marketplace check` probes remote entries, but it reports local-path entries as unreachable because it resolves them as git remotes — so it is not the gate to use for this monorepo. Use `--check-clean` instead.
+This checks two things without writing to disk: every package declares a version consistent with `marketplace.versioning.strategy` (`--check-versions`), and the committed `.claude-plugin/marketplace.json` matches what `apm.yml` would produce (`--check-clean`). The `--dry-run` flag is required: without it, `apm pack` rewrites `marketplace.json` first, so the drift check always passes.
+
+CI runs the same command on every pull request — see [`.github/workflows/marketplace.yml`](../.github/workflows/marketplace.yml). Do not use `apm marketplace check` as the gate here: it probes entries as git remotes and reports local-path entries as unreachable.
 
 ## What to commit
 
