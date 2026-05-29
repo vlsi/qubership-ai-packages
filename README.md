@@ -1,5 +1,18 @@
 # qubership-ai-packages
 
+This repository is an APM marketplace of Qubership agent packages. Two guides cover the workflow:
+
+- [Publisher guide](docs/for-publisher.md) — add a package and release a new version.
+- [Consumer guide](docs/for-consumer.md) — register the marketplace, then install, update, and remove packages.
+
+Quick start for consumers:
+
+```bash
+apm marketplace add Netcracker/qubership-ai-packages --ref v0.1.0
+apm marketplace browse qubership-ai-packages
+apm install apm-authoring@qubership-ai-packages
+```
+
 # APM Quick Start Guide
 
 **Agent Package Manager (APM)** is a package manager for AI agents. It lets you install, create, and share instructions, skills, prompts, and MCP servers for agents like GitHub Copilot, Claude Code, and Cursor.

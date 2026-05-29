@@ -1,0 +1,21 @@
+{
+  "name": "qubership-ai-packages",
+  "owner": {
+    "name": "Netcracker",
+    "url": "https://github.com/Netcracker"
+  },
+  "plugins": [
+    {
+      "name": "apm-authoring",
+      "description": "Guidelines for authoring APM packages (instructions, skills, prompts, agents, hooks).",
+      "version": "1.0.0",
+      "source": "./agent-packages/apm-authoring"
+    },
+    {
+      "name": "go-microservice-dev-kit",
+      "description": "Umbrella package for Qubership Go microservices.",
+      "version": "1.0.0",
+      "source": "./agent-packages/go-microservice-dev-kit"
+    }
+  ]
+}

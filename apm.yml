@@ -1,0 +1,25 @@
+name: qubership-ai-packages
+version: 0.1.0
+description: Netcracker Qubership APM package marketplace
+
+marketplace:
+  owner:
+    name: Netcracker
+    url: https://github.com/Netcracker
+
+  outputs:
+    claude: {}
+
+  versioning:
+    strategy: per_package
+
+  packages:
+    - name: apm-authoring
+      description: Guidelines for authoring APM packages (instructions, skills, prompts, agents, hooks).
+      source: ./agent-packages/apm-authoring
+      version: 1.0.0
+
+    - name: go-microservice-dev-kit
+      description: Umbrella package for Qubership Go microservices.
+      source: ./agent-packages/go-microservice-dev-kit
+      version: 1.0.0
