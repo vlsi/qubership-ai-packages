@@ -1,0 +1,3 @@
+name: deep-review
+version: 1.0.0
+description: Review a whole repository along independent axes, refute every finding, and consolidate the survivors into one ranked report.
