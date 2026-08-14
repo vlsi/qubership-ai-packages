@@ -24,6 +24,10 @@ A package reaches the marketplace in one of two ways:
   source tree.
 - Remote entries either pin a tag/SHA (`ref:`) or track a semver range (`version:` + `tag_pattern:`) — never a branch;
   `apm pack` rejects a mutable branch ref.
+- One directory is an exception: `agent-packages/issue-pipeline/` is not an APM package. It ships dynamic workflows,
+  which APM has no primitive for, so its tree mirrors `~/.claude/` and it is installed by copying — see
+  [its README](../agent-packages/issue-pipeline/README.md). It has no `apm.yml`, no marketplace entry, and no version,
+  so `apm pack` and the install smoke test pass over it.
 - Every change lands through a pull request.
 
 ## Prerequisites
