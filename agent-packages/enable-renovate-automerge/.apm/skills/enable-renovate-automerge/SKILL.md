@@ -141,6 +141,67 @@ gh api -X PATCH repos/<owner>/<repo> -f allow_auto_merge=true
 Open the renovate.json change as a PR; don't widen the update types
 beyond what the gate can vouch for.
 
+An automerged PR merges without a human, so it should reach nobody: no
+review request, no assignee. Two sources add people to a Renovate PR, and
+the same PR turns off both.
+
+- **Renovate.** Delete `assignAutomerge: true` from the repository's
+  renovate.json wherever it appears, top level or inside a
+  `packageRules` entry. At its default `false`, Renovate adds no
+  assignees or reviewers of its own to a PR that will automerge while its
+  checks are not red, and adds them once the checks fail.
+- **CODEOWNERS.** GitHub requests review from the code owners of every
+  file a PR changes, whoever opened it, and ignores `assignAutomerge`.
+  Renovate PRs in Netcracker repositories also get those owners as
+  assignees from `renovate[bot]`, automerged ones included, though no
+  repository or shared preset turns on `assigneesFromCodeOwners`. Make
+  the files Renovate updates ownerless, and a PR that changes only those
+  files reaches nobody.
+
+Collect the files from the repository's history, not from a fixed list:
+
+```sh
+git log origin/<default-branch> --author='renovate' --name-only --format= | sort | uniq -c | sort -rn
+```
+
+Turn them into patterns and append them to CODEOWNERS after every other
+line, each pattern with no owner: the last matching line wins, and a line
+with no owner makes the file ownerless. A pattern without a slash matches
+the name in any directory.
+
+```text
+# Files Renovate updates have no code owner, so a Renovate PR that
+# changes only these files requests no review and assigns nobody.
+go.mod
+go.sum
+pom.xml
+Dockerfile
+mise.toml
+apm.yml
+apm.lock.yaml
+/.github/workflows/
+/.agents/
+/.claude/
+/.cursor/
+```
+
+Keep the list to files Renovate updates often. A file it touched once,
+such as a Helm `values.yaml`, can keep its owners; a PR that changes it
+reaches them, which is rare enough to accept. Leave
+`assigneesFromCodeOwners` and `reviewersFromCodeOwners` as they are.
+
+These files lose their owners for every PR, not just Renovate's. Check
+the default branch's ruleset first: where it requires review from code
+owners (`require_code_owner_review`), an ownerless workflow or Dockerfile
+needs only an ordinary approval, so say so in the PR and let the
+repository owner decide which patterns to keep. A major update, which is
+not automerged, also reaches nobody through CODEOWNERS; where it should
+reach someone, name them in `reviewers` on a `packageRules` entry that
+matches `"matchUpdateTypes": ["major"]`.
+
+GitHub reads CODEOWNERS from the base branch, so the change takes effect
+for PRs opened after it merges.
+
 ## Step 5. Pilot and verify
 
 Test on one Renovate PR before trusting the repository to merge on its
@@ -148,6 +209,12 @@ own:
 
 - Confirm automerge merges the PR once `CI Gate` (or each required check)
   is green.
+- Confirm the PR got no review request and no assignee:
+
+  ```sh
+  gh api repos/<owner>/<repo>/issues/<pr>/timeline --jq '.[] | select(.event == "review_requested" or .event == "assigned") | .event'
+  ```
+
 - Make a required check go red once and confirm the PR does **not**
   merge.
 
