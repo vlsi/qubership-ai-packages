@@ -207,7 +207,10 @@ def render(review):
             out += finding(f)
     if review.get("previous_findings"):
         out += ["## Previous findings", ""]
+        accepted = [p for p in review["previous_findings"] if p["status"] == "fix_accepted"]
         for p in review["previous_findings"]:
+            if p in accepted:
+                continue
             ref = f" (continued by {p['finding_id']})" if p.get("finding_id") else ""
             line = f"- {p['thread_url']}: {p['status']}{ref}; {p['reason']}"
             if p.get("reply_urls"):
@@ -215,6 +218,9 @@ def render(review):
             if p.get("follow_up_url"):
                 line += f" Follow-up: {p['follow_up_url']}."
             out.append(line)
+        if accepted:
+            links = ", ".join(f"[{n}]({p['thread_url']})" for n, p in enumerate(accepted, 1))
+            out.append(f"- fix_accepted, {len(accepted)} threads: {links}.")
         out.append("")
     if review.get("open_questions"):
         out += ["## Needed to complete the review", ""]

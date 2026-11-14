@@ -204,8 +204,8 @@ Fixed since the previous round: <n>.
 - <open question and why it can change the result>
 ```
 
-*Previous findings* counts the `fix_accepted` threads and lists every other one with its reason; the ledger keeps the
-whole list.
+*Previous findings* counts the `fix_accepted` threads and lists every other one with its reason. The ledger links the
+`fix_accepted` threads on one line, and `review.json` keeps their reasons.
 
 *Main problems* lists the classes, ordered by the highest severity among their findings, so the author sees the few
 causes before the many symptoms; it is absent when no class has two findings. *Findings* gives each finding one line:

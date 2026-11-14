@@ -101,6 +101,17 @@ class RenderLedgerTest(unittest.TestCase):
                       "Replies: https://example.test/r/1. Follow-up: https://example.test/issue/9.",
                       self.ledger(data).splitlines())
 
+    def test_accepted_fixes_share_one_line_of_links_after_the_other_statuses(self):
+        data = review([], result="approve", previous_findings=[
+            {"thread_url": "https://example.test/t/1", "status": "fix_accepted", "reason": "long recheck one."},
+            {"thread_url": "https://example.test/t/2", "status": "withdrawn", "reason": "the claim was wrong."},
+            {"thread_url": "https://example.test/t/3", "status": "fix_accepted", "reason": "long recheck three."}])
+        ledger = self.ledger(data)
+        self.assertIn("- https://example.test/t/2: withdrawn; the claim was wrong.\n"
+                      "- fix_accepted, 2 threads: [1](https://example.test/t/1), [2](https://example.test/t/3).\n",
+                      ledger)
+        self.assertNotIn("long recheck", ledger)
+
     def test_the_result_line_counts_only_the_findings_the_change_makes(self):
         data = review([finding("F1", "minor"), older("F2", "major", "follow_up"), stacked("F3", "major"),
                        older("F4", "major", "extend_scope")], result="approve")
