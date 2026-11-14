@@ -175,6 +175,8 @@ Held until the code is settled: <n> findings (in the ledger)
 
 ## Previous findings
 
+Fixed since the previous round: <n>.
+
 - [<short reference>](<thread_url>): <status>; <reason, with the decisive replies linked; for a disputed `major`,
   the assessment of each counterargument>.
 
@@ -201,6 +203,9 @@ Held until the code is settled: <n> findings (in the ledger)
 
 - <open question and why it can change the result>
 ```
+
+*Previous findings* counts the `fix_accepted` threads and lists every other one with its reason; the ledger keeps the
+whole list.
 
 *Main problems* lists the classes, ordered by the highest severity among their findings, so the author sees the few
 causes before the many symptoms; it is absent when no class has two findings. *Findings* gives each finding one line:
@@ -289,8 +294,6 @@ Revision: `3c85f644...0c8d9fd3`.
 
 Out of scope: rules of ADR-0091 to ADR-0096 that #202 and #232 implement.
 
-All 3 findings of the previous round are fixed: [F6](<thread_url>), [F9](<thread_url>), and F22 from the [review body](<review_url>).
-
 **Main problems**
 
 1. The realm summary line is not pinned: joinReloadErrors builds it in map order, and its test matches only prefixes (F35, F47).
@@ -307,9 +310,10 @@ Problem: …
 
 - *Revision*, optional `Assessed by`, and *Out of scope* take one line each. Include `Coverage` only for
   `REVIEW_INCOMPLETE`.
-- *Previous findings*: the earlier findings with `fix_accepted` share one sentence, with the ids linked to their
-  threads; findings that sat in an earlier review body share one link to it. Every other status needs a reason, so
-  each such finding gets its own line: `- [F6](<thread_url>): <status>; <reason>`.
+- *Previous findings*: only the earlier threads the publishing account does not own, with a status other than
+  `fix_accepted`, one line each: `- [F6](<thread_url>): <status>; <reason>`. A `fix_accepted` thread is resolved, the
+  other statuses are answered in their own thread (*Synchronize discussion state*), and a remaining defect is a finding
+  of this round, so the general comment does not repeat them.
 - *Main problems*: one line per class, without the severity: the root cause, then the ids of its findings in
   parentheses, as plain text, not links: each inline comment opens with its tag, so a reader finds it by the id. A
   class left with one published finding is dropped, because that finding already stands on its own; a held finding, or
@@ -345,8 +349,8 @@ For every platform write:
    explicit cleanup authorization; never change review or note bodies that existed before. The one exception is the
    general comment of the publishing account's unsubmitted review or draft, rewritten when the user asks for it again.
 
-At the end, report what was written, the earlier findings accepted as fixed, and, separately, every thread state change
-the table above called for that was not performed, with the reason.
+At the end, report what was written, the number of earlier findings accepted as fixed, and, separately, every thread
+state change the table above called for that was not performed, with the reason.
 
 Use only the target platform's mechanics: a GitHub review is never written with GitLab's commands or field names, and
 the reverse.
