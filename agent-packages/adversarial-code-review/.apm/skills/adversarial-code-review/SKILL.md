@@ -241,7 +241,8 @@ above, with its own directory and its own `review.json`, from the bottom of the 
 request is verified. Then move each `stack` finding to the `review.json` of the request its `introduced_by.request`
 names, where that request was reviewed in this run: set its `origin` to `change` and `introduced_by` to `null`,
 recheck its location range against *Location* in `references/finding-rules.md` at that request's head (the lines can
-sit elsewhere there, and a finding whose lines are gone becomes `location: null` with the path in `problem`), and give
+sit elsewhere there, and a finding whose lines are gone becomes `location: null` with the path in `title`), set its
+`suggestion` to `null` where the lines it replaces differ there, and give
 it an id there: the id of the same defect in that
 request's `<previous>`, or else the next free one. Where that review already holds a finding for the same defect, drop
 the moved one and add its evidence to the existing one.

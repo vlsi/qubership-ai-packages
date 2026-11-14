@@ -1,6 +1,6 @@
 """render-ledger.py on small review.json files: the order of findings and of their groups, held findings with and
-without open code findings, findings the change did not make, the fields of a previous finding, the retest line, and the
-exit status for a file it cannot render."""
+without open code findings, findings the change did not make, the fields of a previous finding, the retest line, empty
+fields and the suggestion block, and the exit status for a file it cannot render."""
 import json
 import os
 import subprocess
@@ -149,6 +149,25 @@ class RenderLedgerTest(unittest.TestCase):
                        finding("F2", "minor", retest=None)])
         self.assertEqual(["- Retest: parse('') returns an empty list"],
                          [line for line in self.ledger(data).splitlines() if line.startswith("- Retest:")])
+
+    def test_an_empty_problem_and_proposed_solution_print_no_line(self):
+        data = review([finding("F1", "nit", problem="", proposed_solution="",
+                               evidence=[{"text": "A.java:3 `// old`", "basis": "fact"}])])
+        lines = self.ledger(data).splitlines()
+        self.assertEqual([], [line for line in lines if line.startswith(("- Problem:", "- Proposed solution:"))])
+        self.assertIn("- Evidence:", lines)
+        self.assertIn("  - fact: A.java:3 `// old`", lines)
+
+    def test_a_suggestion_is_printed_as_a_code_block_tagged_with_the_file_language(self):
+        location = {"path": "src/A.java", "side": "new", "start_line": 3, "end_line": 5, "in_diff": True}
+        data = review([finding("F1", "nit", location=location, suggestion="    int a;\n\n    int b;")])
+        ledger = self.ledger(data)
+        self.assertIn("- Suggestion:\n\n  ```java\n      int a;\n\n      int b;\n  ```\n", ledger)
+
+    def test_an_empty_suggestion_deletes_the_lines_and_is_printed_as_an_empty_block(self):
+        location = {"path": "src/a.unknown", "side": "new", "start_line": 3, "in_diff": True}
+        data = review([finding("F1", "nit", location=location, suggestion="")])
+        self.assertIn("- Suggestion:\n\n  ```text\n  ```\n", self.ledger(data))
 
     def test_a_stack_finding_without_its_request_exits_with_status_2_and_names_it(self):
         result = self.run_script(review([finding("F1", "minor", origin="stack", introduced_by={"commit": "c"})]))

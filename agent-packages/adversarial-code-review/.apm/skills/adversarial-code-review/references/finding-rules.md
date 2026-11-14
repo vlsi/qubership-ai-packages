@@ -61,6 +61,8 @@ compare the text with the proposed solution.
 - Keep the range within one hunk and to about 25 lines. Where the subject is longer, such as a whole method or test,
   narrow the range to the lines the claim is about: the signature, the one branch, the one assertion.
 
+Where the finding carries a `suggestion`, the range is exactly the lines the suggestion replaces, on the new side.
+
 Set `in_diff: false` when no line of the range is inside a hunk. Use `location: null` only for a finding with no line,
 such as a missing changelog entry.
 
@@ -68,11 +70,18 @@ such as a missing changelog entry.
 
 - `title`: the claim, one sentence that states the defect (not the topic) or asks the question. It is the first line of
   the published comment, and often the only line a reader sees, so it stands alone.
-- `problem`: the condition and the concrete impact, without restating `title`.
+- `problem`: what the author needs beyond `title` to accept the claim: the condition it holds under and the impact,
+  where `title` does not already state them. It ends at the impact; the facts behind it go to `evidence`. Leave it empty
+  where `title` carries the whole claim, as it does for most findings about a name or a comment.
 - `evidence`: the decisive facts only, each marked `fact` (read or run) or `inference` (derived). Quote code and text
   exactly, with `path:line`.
 - `proposed_solution`: the smallest outcome that resolves the problem, without prescribing a rewrite a local change
-  avoids.
+  avoids. Where the fix is new text for a few adjacent lines of the new side, such as a rename, a reworded comment, or a
+  changed condition, put the replacement lines in `suggestion`, and keep `proposed_solution` to what they do not show
+  (the other call sites of a renamed method), or empty.
+- `suggestion`: the whole lines that replace the lines `location` covers, with their indentation, where applying them
+  is the whole fix and `location` is on the new side and in the diff; otherwise `null`. A rename with call sites
+  outside the range is not such a fix.
 - `retest`: what a later round checks to accept a fix, such as an input and the result it must give, or a test that
   must exist and fail without the fix. Write it so that it holds for any fix that resolves the problem, not only for
   `proposed_solution`, and so that it fails at the reviewed head. For a `question`, name the answer that settles it.

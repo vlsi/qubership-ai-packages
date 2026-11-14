@@ -30,6 +30,10 @@ to `end_line`; otherwise send `line` equal to `start_line`. GitHub rejects a ran
 where part of the range lies outside the hunk that holds most of its lines, clip the range to that hunk before sending
 it.
 
+A finding's `suggestion` goes at the end of the comment body as a ```` ```suggestion ```` block. GitHub replaces the
+comment's whole range with it, so where the range had to be clipped, render the suggestion as a code block tagged with
+the file's language instead.
+
 - **Draft:** leave out `event`. The review stays `PENDING`, visible only to the publishing account, until the user
   submits it in the web UI. GitHub allows one pending review per account per pull request: list the reviews first
   (`gh api repos/<owner>/<repo>/pulls/<number>/reviews`), and if a `PENDING` one exists, stop and report it rather than

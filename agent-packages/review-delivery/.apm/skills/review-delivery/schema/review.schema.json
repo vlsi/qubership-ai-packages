@@ -359,7 +359,7 @@
         },
         "problem": {
           "type": "string",
-          "description": "The condition and the concrete impact, without restating the title."
+          "description": "The condition and the impact where the title does not state them; empty where the title carries the whole claim."
         },
         "evidence": {
           "type": "array",
@@ -385,7 +385,15 @@
           }
         },
         "proposed_solution": {
-          "type": "string"
+          "type": "string",
+          "description": "The smallest outcome that resolves the problem; only what suggestion does not show, and empty where it shows all of it."
+        },
+        "suggestion": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The whole lines, with their indentation, that replace the new-side lines location covers; null where the fix is not new text for those lines."
         },
         "retest": {
           "type": [

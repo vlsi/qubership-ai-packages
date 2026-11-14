@@ -78,15 +78,33 @@ def location(f):
     return text
 
 
+FENCE_LANGUAGES = {"java": "java", "kt": "kotlin", "go": "go", "py": "python", "rs": "rust", "js": "javascript",
+                   "ts": "typescript", "md": "markdown", "yml": "yaml", "yaml": "yaml", "json": "json", "sh": "bash"}
+
+
+def fence_language(f):
+    """Return the code-block tag for the file a suggestion replaces lines of, or `text` for an unknown extension."""
+    path = (f.get("location") or {}).get("path", "")
+    return FENCE_LANGUAGES.get(path.rsplit(".", 1)[-1] if "." in path else "", "text")
+
+
 def finding(f):
     kind = " (question)" if f["kind"] == "question" else ""
     older = ", pre-existing" if origin(f) == "preexisting" else ""
     out = [f"### {f['id']} {f['severity']}{older}: {f['title']}{kind} ({f['axis']})", "",
-           f"{location(f)} · Confidence: {f['confidence']}", "",
-           f"- Problem: {f['problem']}"]
+           f"{location(f)} · Confidence: {f['confidence']}", ""]
+    if f["problem"]:
+        out.append(f"- Problem: {f['problem']}")
+    if f.get("evidence"):
+        out.append("- Evidence:")
     for e in f.get("evidence", []):
         out.append(f"  - {e['basis']}: {e['text']}")
-    out.append(f"- Proposed solution: {f['proposed_solution']}")
+    if f["proposed_solution"]:
+        out.append(f"- Proposed solution: {f['proposed_solution']}")
+    if f.get("suggestion") is not None:
+        out += ["- Suggestion:", "", f"  ```{fence_language(f)}"]
+        out += [f"  {line}" if line else "" for line in f["suggestion"].splitlines()]
+        out += ["  ```", ""]
     if f.get("retest"):
         out.append(f"- Retest: {f['retest']}")
     if f.get("prior_thread"):

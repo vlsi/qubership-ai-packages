@@ -64,7 +64,7 @@ Result: REVIEW_INCOMPLETE
 `REVIEW_INCOMPLETE` has no counts, because the totals may be incomplete, and is followed by `Coverage: <coverage_gap>`.
 Never write `Coverage: complete`.
 
-**One finding**, in an email and on a platform. Three paragraphs:
+**One finding**, in an email and on a platform: the first line, then each part below that is not empty.
 
 ```markdown
 **F36 minor** The no-usable-key error copies every skipped key's reason, unbounded and unescaped, into each failed load.
@@ -81,8 +81,23 @@ Proposed solution: cap the list at N reasons with "and M more", quote each with 
   worded as a question: `**F1 minor, medium confidence, question**`. The tag stays in English whatever the language of
   the rest, so that an agent can match a comment to its finding with `^\*\*F(\d+) (major|minor|nit)\b`.
 - `Problem:` is from `problem` and the decisive `evidence`: the evidence and the impact, never a restatement of the
-  first line.
-- `Proposed solution:` is from `proposed_solution`, and may be one phrase where the fix is obvious.
+  first line. Where `problem` is empty, the paragraph is absent.
+- `Proposed solution:` is from `proposed_solution`, and may be one phrase where the fix is obvious. Where it is empty,
+  the paragraph is absent.
+- A `suggestion` follows `Proposed solution:`. In an inline comment that is not a reply to an earlier thread it is the
+  platform's suggestion block, which the author applies with one click (each platform reference says how); anywhere
+  else, a code block tagged with the file's language. A nit about a comment is usually the first line and this block:
+
+  ````markdown
+  **F28 nit** "A lambda's declared return type" reads as the returned lambda's, but the type meant is that of the functional interface method the `return` is in.
+
+  ```suggestion
+        // Lambda parameter checking needs the target's nested annotations in the cache. Inside a
+        // lambda, the functional interface method may declare a type variable such as R as its
+        // return type, so recover the instantiated type from the parent context before caching
+        // the returned lambda.
+  ```
+  ````
 - `retest` is not rendered here: the ledger and the next round read it from `review.json`.
 - The lead-ins `Problem:` and `Proposed solution:` are plain text, not bold.
 - Each paragraph is one line, with no hard wraps: the platform wraps it.
@@ -92,10 +107,9 @@ Proposed solution: cap the list at N reasons with "and M more", quote each with 
   ``**F50 nit** `internal/x.go:122`, outside the diff: …``. A finding with no location names what it is about in the
   claim (the description, a commit message).
 
-Word an `evidence` item with `basis: inference` conditionally (`can`, `may`, or the condition it depends on). Keep
-`Problem` and `Proposed solution` to two to four sentences together unless the finding would be ambiguous; do not drop
-the condition, the impact, or the expected outcome to save words. The tone is direct and neutral: no praise, thanks,
-apology, greeting, or closer, and no softening of a defect.
+Word an `evidence` item with `basis: inference` conditionally (`can`, `may`, or the condition it depends on). Add
+nothing to `problem` and `proposed_solution` beyond the decisive evidence: their length is the review's decision. The
+tone is direct and neutral: no praise, thanks, apology, greeting, or closer, and no softening of a defect.
 
 **Scope.** Where `scope_exclusions` is not empty, state it once, near the result: the reader must know what was not
 reviewed.
@@ -113,14 +127,14 @@ that tracks it rather than asking for a fix here.
 | `preexisting`, `follow_up`, with `follow_up_url` | Published, with the last paragraph below. |
 | `preexisting`, `follow_up`, no `follow_up_url` | Not published. |
 
-The last paragraph of a published `preexisting` finding, in place of `Proposed solution:`:
+The last paragraph of a published `preexisting` finding, in place of `Proposed solution:` and the suggestion:
 
 ```markdown
 Follow-up: this fails before this change too, so I filed <follow_up_url> to fix it separately.
 ```
 
 - Write `filed` where this delivery filed the issue, and `it is tracked in <follow_up_url>` where it already existed.
-- For `extend_scope`, keep `Proposed solution:` and add the alternative after it: `Follow-up: this fails before this
+- For `extend_scope`, keep `Proposed solution:` and the suggestion, and add the alternative after them: `Follow-up: this fails before this
   change too. If you would rather keep the change narrow, say so, and it moves to a follow-up issue.` Where
   `follow_up_url` is set, the author already chose the follow-up: render it as `follow_up`.
 
@@ -136,7 +150,7 @@ authorizes no issue. Where the user agrees, for each finding:
 
 1. Load `problem-report-authoring`, and the developer-style skill of the language the issue is written in
    (`english-developer-style` for English). It searches for a report that already exists and writes the issue from the
-   finding's `problem`, `evidence`, `introduced_by.commit`, `proposed_solution`, and `retest`, at the reviewed head's
+   finding's `problem`, `evidence`, `introduced_by.commit`, `proposed_solution`, `suggestion`, and `retest`, at the reviewed head's
    revision.
 2. File the issue in the repository that `problem-report-authoring` finds owns the defect, or link the report its
    search found.
@@ -289,8 +303,6 @@ All 3 findings of the previous round are fixed: [F6](<thread_url>), [F9](<thread
 Problem: …
 
 **F50 nit** `internal/token/keys/timing_test.go:122`, outside the diff: the comment on publish says it sets "the JWKS of every source", which no longer holds for realms.
-
-Problem: …
 ```
 
 - *Revision*, optional `Assessed by`, and *Out of scope* take one line each. Include `Coverage` only for

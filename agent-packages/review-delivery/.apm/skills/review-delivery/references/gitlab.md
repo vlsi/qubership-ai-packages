@@ -115,6 +115,11 @@ glab api --method POST projects/<id>/merge_requests/<iid>/draft_notes \
   --header 'Content-Type: application/json'
 ```
 
+A finding's `suggestion` goes at the end of the note as a ```` ```suggestion:-0+<n> ```` block, where `<n>` is
+`end_line` minus `start_line`: GitLab counts the lines it replaces from the line the note is anchored at, which is
+`start_line` in both a draft and a published note (`--line`). Where the range had to be clipped, render the suggestion as a code block tagged with the file's
+language instead. Read the note back and check that GitLab shows the suggestion on the intended lines.
+
 For a multiline draft, keep the top-level `old_line` or `new_line` on the range start and add
 `position.line_range.start` and `position.line_range.end`. Each boundary needs `line_code`, `type`, and its old or new
 line. A line code has the form `<SHA1(file path)>_<old>_<new>`; use `0` for the side that does not exist. Verify the

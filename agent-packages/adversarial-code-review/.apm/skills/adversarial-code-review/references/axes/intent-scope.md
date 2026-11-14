@@ -16,7 +16,7 @@ in `input.md` as the claim, and the diff as what was done.
   it, or for the hunk to move to its own change.
 - Where the change fixes or extends a behavior, the cases next to it: the same input on a path that shares the changed
   code or that the change's claim names, and the changed code meeting a configuration, a state, or a caller it did not
-  consider. Record such a case whether or not it failed before the change, and say in `problem` whether the
+  consider. Record such a case whether or not it failed before the change, and say in `evidence` whether the
   description, a commit message, or the linked issue claims it: the verifier decides from that whether the author
   handles it here or a follow-up issue does.
 

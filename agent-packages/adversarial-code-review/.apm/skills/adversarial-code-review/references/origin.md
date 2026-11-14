@@ -16,7 +16,7 @@ the one before it.
    it; go to step 4. Where it is present, go to step 4 as well, with the defect older than `<base>`.
 3. **Running the base decides.** Only where reading cannot settle step 2, run the probe at `<base>` in your worktree,
    one worktree for all such findings. Where the run cannot settle it either, the origin is `change` with
-   `confidence: medium`, and `problem` says which part could not be checked.
+   `confidence: medium`, and an `inference` in `evidence` says which part could not be checked.
 4. **Attribute it.**
    - Where *Stack* is empty, a defect absent at `<base>` is `change`, and one present there is `preexisting`.
    - Where blame names a commit that *Stack* lists under another request, the origin is `stack`.
@@ -34,7 +34,7 @@ other `preexisting` finding choose a `disposition`:
 
 - `extend_scope`: the change's purpose reaches the defect. The code the change modifies meets a case it does not
   handle, handling the case takes a few lines in the files the change already touches, and it needs no decision the
-  change has not already made. `proposed_solution` states the handling.
+  change has not already made. `proposed_solution` states the handling, or `suggestion` shows it.
 - `follow_up`: everything else, such as a defect in code the axis read for context, or a case whose handling needs a
   design decision, another component, or more code than the change itself. `proposed_solution` states the fix the
   follow-up issue asks for.
