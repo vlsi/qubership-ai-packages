@@ -24,7 +24,9 @@ Give this to a fresh subagent after every axis has written its findings.
 >    it and say why in `evidence`.
 > 7. Cut from `problem` what `title`, `evidence`, or `suggestion` already says, and leave it empty where nothing is
 >    left. Where `proposed_solution` describes new text for the lines in `location`, move that text to `suggestion`, and
->    check that it replaces the whole range and nothing beyond it.
+>    check that it replaces the whole range and nothing beyond it. Where `evidence` cites a probe or a run whose code
+>    shows the defect, put that code in `reproducer`, cut to the lines that show it, with the current and the expected
+>    result as comments, and drop from `problem` and `proposed_solution` what it shows.
 >
 > Then across findings:
 >

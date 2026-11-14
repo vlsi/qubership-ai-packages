@@ -25,7 +25,10 @@ Grade each by reading `result.md`, the body of `email.md`.
    outside its location, such as a rename whose call sites the block does not cover, and for one under a `major`.
 4. **A `major` keeps its condition.** For every `major`: pass where its text names the input that triggers the defect
    (a lambda returned from a lambda, a lambda in a conditional or `switch` arm) and what NullAway reports for it.
-5. **Majors and minors do not grow.** Pass where the words of all `major` and `minor` findings together are at most
+5. **A missing test comes with its case.** Pass where the finding on the untested `SwitchExpressionTree` check in
+   `getMethodReferenceType` carries a code block with a switch arm that holds a static method reference, and where no
+   finding from check 1 carries a reproducer.
+6. **Majors and minors do not grow.** Pass where the words of all `major` and `minor` findings together are at most
    110% of the mean of the `base` runs of the same model.
 
 ## Skill parts
@@ -33,7 +36,7 @@ Grade each by reading `result.md`, the body of `email.md`.
 - `adversarial-code-review`: `references/finding-rules.md` §Content and §Location; `references/verify.md`, the step
   that cuts `problem` and moves replacement text to `suggestion`
 - `review-delivery`: `SKILL.md` §Rules for every renderer, *One finding*; §Email; `schema/review.schema.json`, the
-  `problem`, `proposed_solution`, and `suggestion` fields
+  `problem`, `proposed_solution`, `reproducer`, and `suggestion` fields
 
 ## Files
 

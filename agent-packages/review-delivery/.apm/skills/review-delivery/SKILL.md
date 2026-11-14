@@ -82,6 +82,20 @@ Proposed solution: cap the list at N reasons with "and M more", quote each with 
   the rest, so that an agent can match a comment to its finding with `^\*\*F(\d+) (major|minor|nit)\b`.
 - `Problem:` is from `problem` and the decisive `evidence`: the evidence and the impact, never a restatement of the
   first line. Where `problem` is empty, the paragraph is absent.
+- A `reproducer` follows as a code block tagged with its `language`. One of more than 10 lines goes in a collapsed
+  block, so the comment still reads in a few lines:
+
+  ````markdown
+  <details><summary>Reproducer</summary>
+
+  ```java
+  …
+  ```
+
+  </details>
+  ````
+
+  An email has no collapsed blocks: there it is `Reproducer:` and the code block.
 - `Proposed solution:` is from `proposed_solution`, and may be one phrase where the fix is obvious. Where it is empty,
   the paragraph is absent.
 - A `suggestion` follows `Proposed solution:`. In an inline comment that is not a reply to an earlier thread it is the
@@ -150,8 +164,8 @@ authorizes no issue. Where the user agrees, for each finding:
 
 1. Load `problem-report-authoring`, and the developer-style skill of the language the issue is written in
    (`english-developer-style` for English). It searches for a report that already exists and writes the issue from the
-   finding's `problem`, `evidence`, `introduced_by.commit`, `proposed_solution`, `suggestion`, and `retest`, at the reviewed head's
-   revision.
+   finding's `problem`, `evidence`, `reproducer`, `introduced_by.commit`, `proposed_solution`, `suggestion`, and
+   `retest`, at the reviewed head's revision.
 2. File the issue in the repository that `problem-report-authoring` finds owns the defect, or link the report its
    search found.
 3. Set the finding's `follow_up_url` in `review.json`, and render the ledger again.
@@ -320,6 +334,9 @@ Problem: …
   one whose comment the user deleted from a draft, is not published.
 - *Not inline*: the findings that cannot be placed inline, each in the *One finding* form, with the location and the
   reason after the tag, and nothing between them.
+
+Write the general comment to `review-body.md` next to `ledger.md`, and give the user its path with the review's URL:
+GitHub does not show the body of a pending review in its web UI.
 
 The general comment carries what the inline comments cannot: the findings that are not inline, and the causes that
 several inline findings share. Do not copy inline findings, their claims, or pointers such as "See inline comment".

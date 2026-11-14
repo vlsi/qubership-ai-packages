@@ -73,6 +73,11 @@ such as a missing changelog entry.
 - `problem`: what the author needs beyond `title` to accept the claim: the condition it holds under and the impact,
   where `title` does not already state them. It ends at the impact; the facts behind it go to `evidence`. Leave it empty
   where `title` carries the whole claim, as it does for most findings about a name or a comment.
+- `reproducer`: the code a reader runs to see the defect, such as a test case, a source file the checker reports on,
+  or a command, with the current and the expected result as comments; for a missing test, the case the test needs.
+  `language` is its code-block tag. Cut it to the lines that show the defect, without the imports and scaffolding the
+  project's test harness adds. `null` where no code shows the claim better than the title, as for most findings about
+  a name or a comment.
 - `evidence`: the decisive facts only, each marked `fact` (read or run) or `inference` (derived). Quote code and text
   exactly, with `path:line`.
 - `proposed_solution`: the smallest outcome that resolves the problem, without prescribing a rewrite a local change

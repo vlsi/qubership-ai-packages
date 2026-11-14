@@ -388,6 +388,31 @@
           "type": "string",
           "description": "The smallest outcome that resolves the problem; only what suggestion does not show, and empty where it shows all of it."
         },
+        "reproducer": {
+          "description": "Code that shows the defect, or the case a missing test needs, with the current and the expected result as comments; null where no code shows the claim better than the title.",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "required": [
+                "language",
+                "code"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "language": {
+                  "type": "string",
+                  "description": "Code-block tag, such as java, kotlin, or bash."
+                },
+                "code": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        },
         "suggestion": {
           "type": [
             "string",

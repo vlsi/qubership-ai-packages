@@ -99,6 +99,10 @@ def finding(f):
         out.append("- Evidence:")
     for e in f.get("evidence", []):
         out.append(f"  - {e['basis']}: {e['text']}")
+    if f.get("reproducer"):
+        out += ["- Reproducer:", "", f"  ```{f['reproducer']['language']}"]
+        out += [f"  {line}" if line else "" for line in f["reproducer"]["code"].splitlines()]
+        out += ["  ```", ""]
     if f["proposed_solution"]:
         out.append(f"- Proposed solution: {f['proposed_solution']}")
     if f.get("suggestion") is not None:

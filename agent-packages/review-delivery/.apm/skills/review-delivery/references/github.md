@@ -85,7 +85,26 @@ gh api repos/<owner>/<repo>/pulls/<number>/reviews/<review-id>
 gh api repos/<owner>/<repo>/pulls/<number>/reviews/<review-id>/comments
 ```
 
-Report the review ID and its `html_url`. For a pending review, the URL is visible only to the publishing account.
+For a pending review the REST comments carry no `line`, `start_line`, or `side`; read the range back through GraphQL
+instead, with the review's `node_id` from the create response:
+
+```shell
+gh api graphql -f query='query($r:ID!){node(id:$r){... on PullRequestReview{comments(first:100){nodes{
+  id path startLine line body}}}}}' -f r=<review node_id>
+```
+
+Report the review ID and its `html_url`. For a pending review, the URL is visible only to the publishing account, and
+the web UI shows its inline comments but not its body.
+
+## Edit a comment of a pending review
+
+Rewrite the body in place with the comment's node `id` from the query above; the range and the thread stay as they
+are:
+
+```shell
+gh api graphql -f query='mutation($c:ID!,$b:String!){updatePullRequestReviewComment(input:{
+  pullRequestReviewCommentId:$c,body:$b}){pullRequestReviewComment{id}}}' -f c=<comment node id> -F b=@/path/to/body.md
+```
 
 ## Replace the body of a pending review
 
